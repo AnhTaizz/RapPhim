@@ -1,0 +1,1 @@
+<% if(member==null){response.sendRedirect("index.jsp");return;} if(!"KH".equals(member.role())){response.sendError(403);return;} %>

@@ -1,0 +1,31 @@
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_DATABASE: rapphim
+      MYSQL_USER: cinema
+      MYSQL_PASSWORD: ${DB_PASSWORD:?copy .env.example to .env}
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      TZ: Asia/Ho_Chi_Minh
+    volumes:
+      - cinema-data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=$$MYSQL_PASSWORD mysql -h 127.0.0.1 -u cinema rapphim -e 'SELECT id FROM tblGheVeMua LIMIT 1'"]
+      interval: 4s
+      timeout: 3s
+      retries: 60
+  web:
+    build: .
+    environment:
+      DB_URL: jdbc:mysql://db:3306/rapphim?allowPublicKeyRetrieval=true&sslMode=DISABLED
+      DB_USER: cinema
+      DB_PASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Ho_Chi_Minh
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${HTTP_PORT:-8088}:8080"
+volumes:
+  cinema-data: {}
