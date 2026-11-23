@@ -2,6 +2,8 @@
 <title><%=h(title)%> · Rạp 08</title><link rel="stylesheet" href="style.css"></head><body>
 <header><div class="bar"><a class="brand" href="index.jsp">Rạp <b>08</b></a>
 <% if(member!=null){ %><nav aria-label="Chức năng"><% if(member.role().equals("QL")){ %>
-<a href="gdTimPhim.jsp">Quản lý phim</a><a href="gdThongKe.jsp">Doanh thu</a><% }else{ %><a href="gdChonSuatChieu.jsp">Lịch chiếu</a><% } %></nav>
-<form action="logout.jsp" method="post"><input type="hidden" name="token" value="<%=token%>"><span><%=h(member.name())%></span> <button class="link">Đăng xuất</button></form><% } %></div></header>
+<a href="gdTimPhim.jsp"<%=request.getServletPath().matches("/gd(Tim|Sua)Phim[.]jsp")?" aria-current=\"page\"":""%>>Quản lý phim</a>
+<a href="gdThongKe.jsp"<%=request.getServletPath().equals("/gdThongKe.jsp")?" aria-current=\"page\"":""%>>Doanh thu</a>
+<% }else{ %><a href="gdChonSuatChieu.jsp"<%=request.getServletPath().equals("/gdChonSuatChieu.jsp")?" aria-current=\"page\"":""%>>Lịch chiếu</a><% } %></nav>
+<form action="logout.jsp" method="post"><input type="hidden" name="token" value="<%=token%>"><% if(!request.getServletPath().equals("/gdChonGhe.jsp")){ %><span><%=h(member.name())%></span><% } %> <button class="link">Đăng xuất</button></form><% } %></div></header>
 <main><h1><%=h(title)%></h1>

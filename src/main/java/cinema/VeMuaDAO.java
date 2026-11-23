@@ -1,5 +1,6 @@
 package cinema;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.*;
 import cinema.VeMua.SuatChieu;
 
@@ -41,7 +42,7 @@ public class VeMuaDAO extends DAO {
         var order=new VeMua(dkChonSuatChieu(id),seats);
         order.kiemTra(gheDaBan(id)); return order;
     }
-    public record Receipt(int id,VeMua order) {}
+    public record Receipt(int id,VeMua order,LocalDateTime purchasedAt) {}
     public Receipt dkXacNhanMua(int customer,int id,List<String> seats) throws SQLException {
         try(var c=open()) {
             c.setTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
@@ -49,9 +50,14 @@ public class VeMuaDAO extends DAO {
             try {
                 var order=new VeMua(get(c,id,true),seats);
                 order.kiemTra(sold(c,id));
-                try(var ticket=c.prepareStatement("INSERT INTO tblVeMua(idThanhVien,idSuatChieu,ngayMua) VALUES(?,?,NOW())",Statement.RETURN_GENERATED_KEYS);
+                LocalDateTime purchasedAt;
+                try(var clock=c.createStatement(); var result=clock.executeQuery("SELECT NOW()")) {
+                    result.next();
+                    purchasedAt=result.getObject(1,LocalDateTime.class);
+                }
+                try(var ticket=c.prepareStatement("INSERT INTO tblVeMua(idThanhVien,idSuatChieu,ngayMua) VALUES(?,?,?)",Statement.RETURN_GENERATED_KEYS);
                     var seat=c.prepareStatement("INSERT INTO tblGheVeMua(idVeMua,idSuatChieu,soGhe) VALUES(?,?,?)")) {
-                    ticket.setInt(1,customer); ticket.setInt(2,id); ticket.executeUpdate();
+                    ticket.setInt(1,customer); ticket.setInt(2,id); ticket.setObject(3,purchasedAt); ticket.executeUpdate();
                     int ticketId;
                     try(var keys=ticket.getGeneratedKeys()) {keys.next(); ticketId=keys.getInt(1);}
                     for(String number:order.ghe()) {
@@ -59,7 +65,7 @@ public class VeMuaDAO extends DAO {
                         try {seat.executeUpdate();}
                         catch(SQLException e) {if(e.getErrorCode()==1062) throw new IllegalArgumentException("Ghế đã bán: "+number+"."); throw e;}
                     }
-                    c.commit(); return new Receipt(ticketId,order);
+                    c.commit(); return new Receipt(ticketId,order,purchasedAt);
                 }
             } catch(SQLException | RuntimeException e) {c.rollback(); throw e;}
         }

@@ -31,8 +31,7 @@ Trên dữ liệu demo, chạy `python tests/demo.py` với Python 3. Bài kiể
 
 ## Đối chiếu báo cáo
 
-- Bảng 2.5, Hình 3.4, 3.7 và 3.10. JSP giữ mã suất qua bước chọn, xem lại và xác nhận. DAO đọc giá từ CSDL, khóa dòng suất khi xác nhận và ghi vé cùng tất cả ghế trong một transaction. Sơ đồ demo cố định 6 hàng A–F, mỗi hàng 8 ghế do báo cáo chưa đặc tả kích thước phòng.
-- Hình 3.3, Bảng 3.2. Giữ năm bảng và khóa duy nhất theo suất và số ghế. Khóa ngoại ghép bảo đảm ghế và vé cùng suất. Giá nguyên đồng dùng DECIMAL thay FLOAT để cộng chính xác. Mật khẩu mẫu lưu dạng PBKDF2-HMAC-SHA256.
-- Bảng 2.6, Hình 3.5, 3.8 và 3.11. Tìm theo chuỗi con, loại ID đang sửa khi đối chiếu tên. Ràng buộc UNIQUE xử lý cả hai lần cập nhật đồng thời. Người dùng xác nhận lưu bằng nút Lưu thay đổi.
-- Bảng 2.7, Hình 3.6, 3.9 và 3.12. Mỗi dòng ghế đóng góp một lần giá của suất. Lọc từ đầu ngày bắt đầu tới trước đầu ngày kế tiếp sau ngày kết thúc. PhimThongKe kế thừa Phim, DAO gán doanh thu sau GROUP BY. Tổng bảng lấy từ chính các dòng đã trả về.
-- Hình 3.4–3.6. DAO dùng kết nối theo thao tác để các phiên độc lập. Vé đang chọn đi qua form và request, phiên đăng nhập giữ tài khoản và mã chống giả mạo yêu cầu.
+- Hình 3.2–3.3. Khách chọn suất chiếu từ bảng, chọn ghế từ sơ đồ 8 hàng A–H, mỗi hàng 10 ghế, rồi xác nhận mua. Tổng tiền cập nhật theo ghế đã chọn. DAO khóa dòng suất, ghi vé cùng tất cả ghế trong một transaction và trả về ngày mua.
+- Hình 3.7, Bảng 3.1. Khóa duy nhất theo suất và số ghế ngăn bán trùng. Khóa ngoại ghép bảo đảm ghế và vé cùng suất. Giá nguyên đồng dùng DECIMAL để cộng chính xác. Mật khẩu mẫu lưu dạng PBKDF2-HMAC-SHA256.
+- Hình 3.4–3.5. Tìm theo chuỗi con, loại ID đang sửa khi đối chiếu tên. Ràng buộc UNIQUE xử lý cả hai lần cập nhật đồng thời.
+- Hình 3.6. Mỗi dòng ghế đóng góp một lần giá của suất. Khoảng lọc gồm cả ngày bắt đầu và ngày kết thúc. Bảng hiển thị thể loại và doanh thu giảm dần, với tổng doanh thu tính từ các dòng kết quả.

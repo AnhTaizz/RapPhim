@@ -54,32 +54,40 @@ for path, payload in [(edit, form), ("gdTimPhim.jsp", None), ("gdThongKe.jsp", N
 stats = "gdThongKe.jsp?from=" + TODAY + "&to=" + TODAY
 def revenue():
     body = manager.call(stats)
-    match = re.search(r"<td>Mắt biếc</td><td>([0-9.]+) ₫", body)
+    match = re.search(r'<td>Mắt biếc</td><td>Tình cảm</td><td class="currency">([0-9.]+) ₫', body)
     return int(match[1].replace(".", "")) if match else 0
 
 before = revenue()
 page = "gdChonGhe.jsp?id=1"
-free = re.findall(r'name="seat" value="([A-F][1-8])" aria-label="Ghế [A-F][1-8]"', first.call(page))
-assert len(free) >= 4, "Run against fresh demo data"
+seat_map = first.call(page)
+all_seats = re.findall(r'name="seat" value="([A-H](?:10|[1-9]))" aria-label="Ghế ', seat_map)
+assert all_seats == [f"{row}{col}" for row in "ABCDEFGH" for col in range(1, 11)]
+free = re.findall(r'name="seat" value="([A-H](?:10|[1-9]))" aria-label="Ghế [A-H](?:10|[1-9])"', seat_map)
+expanded = [seat for seat in free if seat[0] in "GH" or int(seat[1:]) > 8]
+assert len(free) >= 4 and expanded, "Run against fresh demo data"
+chosen = [free[0], expanded[-1]] if free[0] != expanded[-1] else free[:2]
+remaining = [seat for seat in free if seat not in chosen]
 def buy(client, seats, action):
     return client.call(page, dict(id=1, seat=seats, action=action))
 
-assert "160.000 ₫" in buy(first, free[:2], "preview")
-assert "Mua vé thành công" in buy(first, free[:2], "confirm")
+assert "160.000 ₫" in buy(first, chosen, "preview")
+assert "Danh sách ghế không hợp lệ" in buy(first, ["H11"], "confirm")
+receipt = buy(first, chosen, "confirm")
+assert "Mua vé thành công. Ngày mua:" in receipt
 refreshed = first.call(page)
-assert all("Ghế " + seat + " đã bán" in refreshed for seat in free[:2])
+assert all("Ghế " + seat + " đã bán" in refreshed for seat in chosen)
 gate = Barrier(2)
 def compete(client):
-    assert "Xác nhận mua" in buy(client, [free[2]], "preview")
+    assert "Xác nhận mua" in buy(client, [remaining[0]], "preview")
     gate.wait(timeout=20)
-    return buy(client, [free[2]], "confirm")
+    return buy(client, [remaining[0]], "confirm")
 
 with ThreadPoolExecutor(2) as pool:
     results = list(pool.map(compete, [first, second]))
 assert sum("Mua vé thành công" in body for body in results) == 1
-assert sum("Ghế đã bán: " + free[2] in body for body in results) == 1
-assert "Ghế đã bán" in buy(second, [free[2], free[3]], "confirm")
-assert "Ghế " + free[3] + " đã bán" not in first.call(page)
+assert sum("Ghế đã bán: " + remaining[0] in body for body in results) == 1
+assert "Ghế đã bán" in buy(second, remaining[:2], "confirm")
+assert "Ghế " + remaining[1] + " đã bán" not in first.call(page)
 assert revenue() - before == 240000
 assert "Không có doanh thu" in manager.call("gdThongKe.jsp?from=2001-01-01&to=2001-01-31")
 assert "Từ ngày phải" in manager.call("gdThongKe.jsp?from=2026-01-02&to=2026-01-01")

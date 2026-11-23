@@ -2,7 +2,7 @@
 <%!
 String h(Object v) {return v==null?"":v.toString().replace("&","&amp;").replace("<","&lt;").replace(">","&gt;").replace("\"","&quot;").replace("'","&#39;");}
 String money(BigDecimal n) {return NumberFormat.getIntegerInstance(Locale.forLanguageTag("vi-VN")).format(n)+" ₫";}
-String when(VeMua.SuatChieu s) {return s.gio().format(DateTimeFormatter.ofPattern("HH:mm · dd/MM/yyyy"));}
+String dateTime(LocalDateTime value) {return value.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));}
 int number(String s) {try{return Integer.parseInt(s);}catch(NumberFormatException e){return 0;}}
 String val(String s){return s==null?"":s.strip();}
 %><%
