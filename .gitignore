@@ -3,6 +3,10 @@ target/
 .env.*
 !.env.example
 .idea/
+.vscode/
+node_modules/
+Thumbs.db
+.DS_Store
 *.iml
 *.class
 *.log
